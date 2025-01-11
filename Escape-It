@@ -64,6 +64,9 @@ Mode_Selection = ""
 Title_image = pygame.image.load(os.path.join("Assets", "Title.png"))
 Title = pygame.transform.scale(Title_image, (int(Title_image.get_width() * 1.4), int(Title_image.get_height() * 1.4)))
 
+Settings_image = pygame.image.load(os.path.join("Assets", "Settings.png"))
+Settings = pygame.transform.scale_by(Settings_image, 1.5)
+
 Selected_text = "Select a mode to continue"
 Game_State = "Menu"
 
@@ -151,6 +154,8 @@ def draw():
     if Game_State == "Menu":
         WINDOW.blit(BG, (0, 0))
         WINDOW.blit(Title, (WIDTH // 2 - Title.get_width() // 2, 75))
+        WINDOW.blit(Settings, (WIDTH - Settings.get_width() - 20, 20))
+        
         AI_button.draw(WINDOW)
         Human_button.draw(WINDOW)
         Play_button.draw(WINDOW)
