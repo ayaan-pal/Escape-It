@@ -60,7 +60,7 @@ class Button:
 
 AI_button = Button(AI, 150, 300, AI_hover, "Human vs AI", WHITE, font_medium)
 Human_button = Button(PVP, 450, 300, PVP_hover, "2 Players", WHITE, font_medium)
-Play_button = Button(PLAY, 300, 500, PLAY_hover, "Play", WHITE, font_medium)
+Play_button = Button(PLAY, 285, 450, PLAY_hover, "Play", WHITE, font_medium)
 
 def draw():
     WINDOW.fill(BLUE)
