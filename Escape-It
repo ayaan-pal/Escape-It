@@ -10,57 +10,56 @@ pygame.display.set_caption("Escape It!")
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-GRAY = (200, 200, 200)
-BLUE = (100, 149, 237)
-GREEN = (50, 205, 50)
-RED = (220, 20, 60)
 
 BG_IMAGE = pygame.image.load(os.path.join("Assets", "Bg.webp"))
 BG_WIDTH = BG_IMAGE.get_width()
 BG = pygame.transform.scale_by(BG_IMAGE, (WIDTH // BG_WIDTH) + 1)
 
+AI = pygame.image.load(os.path.join("Assets", "PVAI.svg"))
+PVP = pygame.image.load(os.path.join("Assets", "PVP.svg"))
+
 font_large = pygame.font.SysFont("handycasual", 120)
 font_medium = pygame.font.SysFont("handycasual", 40)
 font_small = pygame.font.SysFont("handycasual", 25)
 
-def create_button(x, y, width, height, color, hover_color, text, text_color, font):
-    return {
-        "rect": pygame.Rect(x, y, width, height),
-        "color": color,
-        "hover_color": hover_color,
-        "text": text,
-        "text_color": text_color,
-        "font": font
-    }
+class Button:
+    def __init__(self, image, x, y, hover_image, text, text_color, font):
+        self.image = image
+        self.x = x
+        self.y = y
+        self.hover_image = hover_image
+        self.text = text
+        self.text_color = text_color
+        self.font = font
+        self.rect = image.get_rect(topleft=(x, y))
 
-def draw_button(button):
-    mouse_pos = pygame.mouse.get_pos()
-    if button["rect"].collidepoint(mouse_pos):
-        pygame.draw.rect(WINDOW, button["hover_color"], button["rect"])
-    else:
-        pygame.draw.rect(WINDOW, button["color"], button["rect"])
-    
-    text_surface = button["font"].render(button["text"], True, button["text_color"])
-    text_rect = text_surface.get_rect(center=button["rect"].center)
-    WINDOW.blit(text_surface, text_rect)
+    def draw(self, window):
+        mouse_pos = pygame.mouse.get_pos()
+        if self.rect.collidepoint(mouse_pos):
+            window.blit(self.hover_image, (self.x, self.y))
+        else:
+            window.blit(self.image, (self.x, self.y))
+        
+        text_surface = self.font.render(self.text, True, self.text_color)
+        text_rect = text_surface.get_rect(center=self.rect.center)
+        window.blit(text_surface, text_rect)
 
-def is_button_clicked(button, event):
-    if event.type == pygame.MOUSEBUTTONDOWN:
-        if button["rect"].collidepoint(event.pos):
-            return True
-    return False
+    def clicked(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.rect.collidepoint(event.pos):
+                return True
+        return False
 
-# Create buttons
-button_ai_vs_human = create_button(150, 300, 250, 100, GRAY, BLUE, "Human vs AI", BLACK, font_medium)
-button_human_vs_human = create_button(450, 300, 250, 100, GRAY, GREEN, "2 Players", BLACK, font_medium)
+AI_button = Button(AI, 150, 300, AI, "Human vs AI", BLACK, font_medium)
+Human_button = Button(PVP, 450, 300, PVP, "2 Players", BLACK, font_medium)
 
 def draw():
     WINDOW.blit(BG, (0, 0))
     draw_text = font_large.render("Escape it!", True, WHITE)
     WINDOW.blit(draw_text, draw_text.get_rect(center=(WIDTH // 2, 150)))
-    draw_button(button_ai_vs_human)
-    draw_button(button_human_vs_human)
-    pygame.display.flip()
+    AI_button.draw(WINDOW)
+    Human_button.draw(WINDOW)
+    pygame.display.update()
 
 def main():
     running = True
@@ -69,14 +68,13 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            elif is_button_clicked(button_ai_vs_human, event):
+            elif AI_button.clicked(event):
                 print("AI vs Human selected")
-            elif is_button_clicked(button_human_vs_human, event):
+            elif Human_button.clicked(event):
                 print("Human vs Human selected")
 
     pygame.quit()
     sys.exit()
-
 
 if __name__ == "__main__":
     main()
