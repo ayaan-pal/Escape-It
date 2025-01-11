@@ -31,6 +31,16 @@ class BG_selector:
             if self.rect.collidepoint(event.pos):
                 return True
         return False
+    
+class Character:
+    def __init__(self, image, x, y):
+        self.image = image
+        self.x = x
+        self.y = y
+        self.rect = image.get_rect(topleft=(x, y))
+        
+    def draw(self, window):
+        window.blit(self.image, (self.x, self.y))
 
 BG_1_image = pygame.image.load(os.path.join("Assets", "BG_1.webp"))
 BG_2_image = pygame.image.load(os.path.join("Assets", "BG_2.webp"))
@@ -50,11 +60,6 @@ Title = pygame.transform.scale(Title_image, (int(Title_image.get_width() * 1.4),
 Selected_text = "Select a mode to continue"
 Game_State = "Menu"
 
-Player_1_image = pygame.image.load(os.path.join("Assets", "glob1.webp"))
-Player_2_image = pygame.image.load(os.path.join("Assets", "glob2.webp"))
-Player_3_image = pygame.image.load(os.path.join("Assets", "glob3.webp"))
-Player_1_select = pygame.transform.scale_by(Player_1_image, 0.2)
-
 AI = pygame.image.load(os.path.join("Assets", "PVAI.svg"))
 PVP = pygame.image.load(os.path.join("Assets", "PVP.svg"))
 AI_hover = pygame.image.load(os.path.join("Assets", "PVAIhover.svg"))
@@ -67,7 +72,7 @@ font_medium = pygame.font.SysFont("handycasual", 40)
 font_small = pygame.font.SysFont("handycasual", 25)
 
 class Player:
-    def __init__(self, image, x, y, x_vel, y_vel, gravity, friction, jump_strength):
+    def __init__(self, image, x, y, x_vel=0, y_vel=0, gravity=0.5, friction=0.1, jump_strength=10):
         self.image = image
         self.x = x
         self.y = y
@@ -80,13 +85,6 @@ class Player:
         
     def draw(self, window):
         window.blit(self.image, (self.x, self.y))
-        
-class Character:
-    def __init__(self, image, x, y):
-        self.image = image
-        self.x = x
-        self.y = y
-        self.rect = image.get_rect(topleft=(x, y))
 
 class Button:
     def __init__(self, image, x, y, hover_image, text, text_color, font):
@@ -126,6 +124,14 @@ AI_button = Button(AI, 150, 300, AI_hover, "Human vs AI", WHITE, font_medium)
 Human_button = Button(PVP, 450, 300, PVP_hover, "2 Players", WHITE, font_medium)
 Play_button = Button(PLAY, 285, 450, PLAY_hover, "Play", WHITE, font_medium)
 
+# Character selection buttons
+Player_image_1 = pygame.image.load(os.path.join("Assets", "glob1.webp"))
+Player_image_2 = pygame.image.load(os.path.join("Assets", "glob2.webp"))
+Player_image_3 = pygame.image.load(os.path.join("Assets", "glob3.webp"))
+Character_1 = Character(Player_image_1, 150, 300)
+Character_2 = Character(Player_image_2, 350, 300)
+Character_3 = Character(Player_image_3, 550, 300)
+
 def draw():
     WINDOW.fill(BLUE)
     WINDOW.blit(BG, (0, 0))
@@ -143,18 +149,36 @@ def draw():
         BG_2_selector.draw(WINDOW)
         BG_3_selector.draw(WINDOW)
     
-    if BG_Selection == 1:
+    if Game_State == "Map-AI" and BG_Selection == 1:
         WINDOW.blit(BG_1, (0, 0))
-    elif BG_Selection == 2:
+    elif Game_State == "Map-AI" and BG_Selection == 2:
         WINDOW.blit(BG_2, (0, 0))
-    elif BG_Selection == 3:
+    elif Game_State == "Map-AI" and BG_Selection == 3:
         WINDOW.blit(BG_3, (0, 0))
+    
+    if Game_State == "Character":
+        Character_1.draw(WINDOW)
+        Character_2.draw(WINDOW)
+        Character_3.draw(WINDOW)
+    
+    if Game_State == "Game":
+        if BG_Selection == 1:
+            WINDOW.blit(BG_1, (0, 0))
+        elif BG_Selection == 2:
+            WINDOW.blit(BG_2, (0, 0))
+        elif BG_Selection == 3:
+            WINDOW.blit(BG_3, (0, 0))
+        player1.draw(WINDOW)
+        if player2:
+            player2.draw(WINDOW)
     
     pygame.display.update()
 
 def main():
-    global Selected_text, Game_State, BG_Selection
+    global Selected_text, Game_State, BG_Selection, player1, player2
     clock = pygame.time.Clock()
+    player1 = None
+    player2 = None
     running = True
     while running:
         clock.tick(60)  # Control the framerate to 60 FPS
@@ -182,16 +206,51 @@ def main():
             if Game_State.startswith("Map"):
                 if BG_1_selector.clicked(event):
                     BG_Selection = 1
-                    Game_State += "-Character"
+                    Game_State = "Character"
                 if BG_2_selector.clicked(event):
                     BG_Selection = 2
-                    Game_State += "-Character"
+                    Game_State = "Character"
                 if BG_3_selector.clicked(event):
                     BG_Selection = 3
-                    Game_State += "-Character"
+                    Game_State = "Character"
                     
-            if Game_State.endswith("-Character"):
-                pass
+            if Game_State == "Character":
+                if Character_1.rect.collidepoint(pygame.mouse.get_pos()) and event.type == pygame.MOUSEBUTTONDOWN:
+                    if Selected_text == "Human vs AI selected":
+                        player1 = Player(Player_image_1, 100, 500)
+                        player2 = Player(Player_image_2, 600, 500)
+                        Game_State = "Game"
+                    elif Selected_text == "2 Players selected":
+                        if not player1:
+                            player1 = Player(Player_image_1, 100, 500)
+                            Selected_text = "Player 2, select your character"
+                        elif not player2 and player1.image != Player_image_1:
+                            player2 = Player(Player_image_1, 600, 500)
+                            Game_State = "Game"
+                if Character_2.rect.collidepoint(pygame.mouse.get_pos()) and event.type == pygame.MOUSEBUTTONDOWN:
+                    if Selected_text == "Human vs AI selected":
+                        player1 = Player(Player_image_2, 100, 500)
+                        player2 = Player(Player_image_3, 600, 500)
+                        Game_State = "Game"
+                    elif Selected_text == "2 Players selected":
+                        if not player1:
+                            player1 = Player(Player_image_2, 100, 500)
+                            Selected_text = "Player 2, select your character"
+                        elif not player2 and player1.image != Player_image_2:
+                            player2 = Player(Player_image_2, 600, 500)
+                            Game_State = "Game"
+                if Character_3.rect.collidepoint(pygame.mouse.get_pos()) and event.type == pygame.MOUSEBUTTONDOWN:
+                    if Selected_text == "Human vs AI selected":
+                        player1 = Player(Player_image_3, 100, 500)
+                        player2 = Player(Player_image_1, 600, 500)
+                        Game_State = "Game"
+                    elif Selected_text == "2 Players selected":
+                        if not player1:
+                            player1 = Player(Player_image_3, 100, 500)
+                            Selected_text = "Player 2, select your character"
+                        elif not player2 and player1.image != Player_image_3:
+                            player2 = Player(Player_image_3, 600, 500)
+                            Game_State = "Game"
                     
         draw()
 
