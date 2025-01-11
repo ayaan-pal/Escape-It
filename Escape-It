@@ -1,25 +1,85 @@
 import pygame
+import sys
 
+# Initialize Pygame
 pygame.init()
 
+# WINDOW dimensions
 WIDTH, HEIGHT = 800, 600
 WINDOW = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Escape It")
+pygame.display.set_caption("Escape It!")
 
-def draw_window():
-    WINDOW.fill((200, 200, 255))
-    pygame.display.update()
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+GRAY = (200, 200, 200)
+BLUE = (100, 149, 237)
+GREEN = (50, 205, 50)
+RED = (220, 20, 60)
 
-def main():
-    run = True
-    while run:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                run = False
-                
-        draw_window()
+font_large = pygame.font.SysFont("Arial", 60)
+font_medium = pygame.font.SysFont("Arial", 40)
+font_small = pygame.font.SysFont("Arial", 28)
 
-    pygame.quit()
+class Button:
+    def __init__(self, x, y, width, height, color, hover_color, text, text_color, font):
+        self.rect = pygame.Rect(x, y, width, height)
+        self.color = color
+        self.hover_color = hover_color
+        self.text = text
+        self.text_color = text_color
+        self.font = font
 
-if __name__ == "__main__":
-    main()
+    def draw(self, WINDOW):
+        mouse_pos = pygame.mouse.get_pos()
+        if self.rect.collidepoint(mouse_pos):
+            pygame.draw.rect(WINDOW, self.hover_color, self.rect)
+        else:
+            pygame.draw.rect(WINDOW, self.color, self.rect)
+        
+        text_surface = self.font.render(self.text, True, self.text_color)
+        text_rect = text_surface.get_rect(center=self.rect.center)
+        WINDOW.blit(text_surface, text_rect)
+
+    def is_clicked(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.rect.collidepoint(event.pos):
+                return True
+        return False
+
+# Create buttons
+button_ai_vs_human = Button(150, 300, 250, 100, GRAY, BLUE, "AI VS Human", BLACK, font_medium)
+button_human_vs_human = Button(450, 300, 250, 100, GRAY, GREEN, "Human VS Human", BLACK, font_medium)
+
+# Draw background with visual flair
+def draw_background():
+    WINDOW.fill(WHITE)
+    for i in range(0, WIDTH, 40):
+        pygame.draw.line(WINDOW, GRAY, (i, 0), (i, HEIGHT), 1)
+    for j in range(0, HEIGHT, 40):
+        pygame.draw.line(WINDOW, GRAY, (0, j), (WIDTH, j), 1)
+
+def draw():
+    draw_background()
+    draw_text = font_large.render("ESCAPE IT", True, BLACK)
+    WINDOW.blit(draw_text, draw_text.get_rect(center=(WIDTH // 2, 100)))
+    button_ai_vs_human.draw(WINDOW)
+    button_human_vs_human.draw(WINDOW)
+    pygame.display.flip()
+
+# Main game loop
+running = True
+while running:
+    draw()
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        elif button_ai_vs_human.is_clicked(event):
+            print("AI vs Human selected")
+            # Placeholder for starting AI vs Human mode
+        elif button_human_vs_human.is_clicked(event):
+            print("Human vs Human selected")
+            # Placeholder for starting Human vs Human mode
+
+# Quit Pygame
+pygame.quit()
+sys.exit()
