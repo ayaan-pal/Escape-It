@@ -14,15 +14,46 @@ BLUE = (200, 200, 255)
 
 BG_IMAGE = pygame.image.load(os.path.join("Assets", "Background.jpg"))
 BG_WIDTH = BG_IMAGE.get_width()
-BG = pygame.transform.scale_by(BG_IMAGE, (WIDTH / BG_WIDTH) + 0.2)
+BG = pygame.transform.scale(BG_IMAGE, (int(WIDTH / BG_WIDTH * BG_IMAGE.get_width()), HEIGHT))
+
+class BG_selector:
+    def __init__(self, image, x, y):
+        self.image = image
+        self.x = x
+        self.y = y
+        self.rect = image.get_rect(topleft=(x, y))
+        
+    def draw(self, window):
+        window.blit(self.image, (self.x, self.y))
+        
+    def clicked(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.rect.collidepoint(event.pos):
+                return True
+        return False
+
+BG_1_image = pygame.image.load(os.path.join("Assets", "BG_1.webp"))
+BG_2_image = pygame.image.load(os.path.join("Assets", "BG_2.webp"))
+BG_3_image = pygame.image.load(os.path.join("Assets", "BG_3.webp"))
+BG_1 = pygame.transform.scale(BG_1_image, (int(HEIGHT / BG_1_image.get_height() * BG_1_image.get_width()), HEIGHT))
+BG_2 = pygame.transform.scale(BG_2_image, (int(HEIGHT / BG_2_image.get_height() * BG_2_image.get_width()), HEIGHT))
+BG_3 = pygame.transform.scale(BG_3_image, (int(HEIGHT / BG_3_image.get_height() * BG_3_image.get_width()), HEIGHT))
+BG_1_selector = BG_selector(pygame.transform.scale(BG_1_image, (int(BG_1_image.get_width() * 0.2), int(BG_1_image.get_height() * 0.2))), 30, 250)
+BG_2_selector = BG_selector(pygame.transform.scale(BG_2_image, (int(BG_2_image.get_width() * 0.2), int(BG_2_image.get_height() * 0.2))), 310, 250)
+BG_3_selector = BG_selector(pygame.transform.scale(BG_3_image, (int(BG_3_image.get_width() * 0.2), int(BG_3_image.get_height() * 0.2))), 570, 250)
+
+BG_Selection = 0
 
 Title_image = pygame.image.load(os.path.join("Assets", "Title.png"))
-Title = pygame.transform.scale_by(Title_image, 1.4)
+Title = pygame.transform.scale(Title_image, (int(Title_image.get_width() * 1.4), int(Title_image.get_height() * 1.4)))
 
 Selected_text = "Select a mode to continue"
 Game_State = "Menu"
 
-Player_image = pygame.image.load(os.path.join("Assets", "glob.webp"))
+Player_1_image = pygame.image.load(os.path.join("Assets", "glob1.webp"))
+Player_2_image = pygame.image.load(os.path.join("Assets", "glob2.webp"))
+Player_3_image = pygame.image.load(os.path.join("Assets", "glob3.webp"))
+Player_1_select = pygame.transform.scale_by(Player_1_image, 0.2)
 
 AI = pygame.image.load(os.path.join("Assets", "PVAI.svg"))
 PVP = pygame.image.load(os.path.join("Assets", "PVP.svg"))
@@ -50,7 +81,12 @@ class Player:
     def draw(self, window):
         window.blit(self.image, (self.x, self.y))
         
-        
+class Character:
+    def __init__(self, image, x, y):
+        self.image = image
+        self.x = x
+        self.y = y
+        self.rect = image.get_rect(topleft=(x, y))
 
 class Button:
     def __init__(self, image, x, y, hover_image, text, text_color, font):
@@ -102,13 +138,22 @@ def draw():
         Human_button.draw(WINDOW)
         Play_button.draw(WINDOW)
         
-    if Game_State == "Human":
-        Player1.draw(WINDOW)
+    if Game_State.startswith("Map"):
+        BG_1_selector.draw(WINDOW)
+        BG_2_selector.draw(WINDOW)
+        BG_3_selector.draw(WINDOW)
+    
+    if BG_Selection == 1:
+        WINDOW.blit(BG_1, (0, 0))
+    elif BG_Selection == 2:
+        WINDOW.blit(BG_2, (0, 0))
+    elif BG_Selection == 3:
+        WINDOW.blit(BG_3, (0, 0))
     
     pygame.display.update()
 
 def main():
-    global Selected_text, Game_State, Player1
+    global Selected_text, Game_State, BG_Selection
     clock = pygame.time.Clock()
     running = True
     while running:
@@ -129,11 +174,24 @@ def main():
             
             if Play_button.clicked(event):
                 if Selected_text == "Human vs AI selected":
-                    Game_State = "AI"
+                    Game_State = "Map-AI"
                     
                 if Selected_text == "2 Players selected":
-                    Game_State = "Human"
-                    Player1 = Player(Player_image, 100, 100, 0, 0, 0.5, 0.1, 10)
+                    Game_State = "Map-Human"
+                    
+            if Game_State.startswith("Map"):
+                if BG_1_selector.clicked(event):
+                    BG_Selection = 1
+                    Game_State += "-Character"
+                if BG_2_selector.clicked(event):
+                    BG_Selection = 2
+                    Game_State += "-Character"
+                if BG_3_selector.clicked(event):
+                    BG_Selection = 3
+                    Game_State += "-Character"
+                    
+            if Game_State.endswith("-Character"):
+                pass
                     
         draw()
 
