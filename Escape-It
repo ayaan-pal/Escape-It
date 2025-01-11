@@ -12,11 +12,14 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 BLUE = (200, 200, 255)
 
-BG_IMAGE = pygame.image.load(os.path.join("Assets", "Bg.webp"))
+BG_IMAGE = pygame.image.load(os.path.join("Assets", "Background.jpg"))
 BG_WIDTH = BG_IMAGE.get_width()
-BG = pygame.transform.scale_by(BG_IMAGE, (WIDTH // BG_WIDTH) + 1)
+BG = pygame.transform.scale_by(BG_IMAGE, (WIDTH / BG_WIDTH) + 0.2)
 
-Selected_text = "Select a mode"
+Title_image = pygame.image.load(os.path.join("Assets", "Title.png"))
+Title = pygame.transform.scale_by(Title_image, 1.4)
+
+Selected_text = "Select a mode to continue"
 Game_State = "Menu"
 
 AI = pygame.image.load(os.path.join("Assets", "PVAI.svg"))
@@ -57,6 +60,12 @@ class Button:
             if self.rect.collidepoint(event.pos):
                 return True
         return False
+    
+    def hover(self):
+        mouse_pos = pygame.mouse.get_pos()
+        if self.rect.collidepoint(mouse_pos):
+            return True
+        return False
 
 AI_button = Button(AI, 150, 300, AI_hover, "Human vs AI", WHITE, font_medium)
 Human_button = Button(PVP, 450, 300, PVP_hover, "2 Players", WHITE, font_medium)
@@ -67,9 +76,8 @@ def draw():
     WINDOW.blit(BG, (0, 0))
     
     if Game_State == "Menu":
-        Title = font_large.render("Escape it!", True, WHITE)
-        WINDOW.blit(Title, Title.get_rect(center=(WIDTH // 2, 150)))
-        SelectedText = font_medium.render(Selected_text, True, WHITE)
+        WINDOW.blit(Title, (WIDTH // 2 - Title.get_width() // 2, 75))
+        SelectedText = font_medium.render(Selected_text, True, BLACK)
         WINDOW.blit(SelectedText, SelectedText.get_rect(center=(WIDTH // 2, 400)))
         AI_button.draw(WINDOW)
         Human_button.draw(WINDOW)
@@ -79,15 +87,21 @@ def draw():
 
 def main():
     global Selected_text, Game_State
+    clock = pygame.time.Clock()
     running = True
     while running:
+        clock.tick(60)  # Control the framerate to 60 FPS
         draw()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            
-            if AI_button.clicked(event):
-                Selected_text = "Human vs AI selected"
+                
+            if AI_button.hover():
+                AI_button.target_size = 1.3
+                if AI_button.clicked(event):
+                    Selected_text = "Human vs AI selected"
+            else:
+                AI_button.target_size = 1
             
             if Human_button.clicked(event):
                 Selected_text = "2 Players selected"
