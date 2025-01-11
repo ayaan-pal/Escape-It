@@ -22,6 +22,8 @@ Title = pygame.transform.scale_by(Title_image, 1.4)
 Selected_text = "Select a mode to continue"
 Game_State = "Menu"
 
+Player_image = pygame.image.load(os.path.join("Assets", "glob.webp"))
+
 AI = pygame.image.load(os.path.join("Assets", "PVAI.svg"))
 PVP = pygame.image.load(os.path.join("Assets", "PVP.svg"))
 AI_hover = pygame.image.load(os.path.join("Assets", "PVAIhover.svg"))
@@ -32,6 +34,23 @@ PLAY_hover = pygame.image.load(os.path.join("Assets", "Playhover.svg"))
 font_large = pygame.font.SysFont("handycasual", 120)
 font_medium = pygame.font.SysFont("handycasual", 40)
 font_small = pygame.font.SysFont("handycasual", 25)
+
+class Player:
+    def __init__(self, image, x, y, x_vel, y_vel, gravity, friction, jump_strength):
+        self.image = image
+        self.x = x
+        self.y = y
+        self.x_vel = x_vel
+        self.y_vel = y_vel
+        self.gravity = gravity
+        self.friction = friction
+        self.jump_strength = jump_strength
+        self.rect = image.get_rect(topleft=(x, y))
+        
+    def draw(self, window):
+        window.blit(self.image, (self.x, self.y))
+        
+        
 
 class Button:
     def __init__(self, image, x, y, hover_image, text, text_color, font):
@@ -82,16 +101,18 @@ def draw():
         AI_button.draw(WINDOW)
         Human_button.draw(WINDOW)
         Play_button.draw(WINDOW)
+        
+    if Game_State == "Human":
+        Player1.draw(WINDOW)
     
     pygame.display.update()
 
 def main():
-    global Selected_text, Game_State
+    global Selected_text, Game_State, Player1
     clock = pygame.time.Clock()
     running = True
     while running:
         clock.tick(60)  # Control the framerate to 60 FPS
-        draw()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -109,8 +130,12 @@ def main():
             if Play_button.clicked(event):
                 if Selected_text == "Human vs AI selected":
                     Game_State = "AI"
+                    
                 if Selected_text == "2 Players selected":
                     Game_State = "Human"
+                    Player1 = Player(Player_image, 100, 100, 0, 0, 0.5, 0.1, 10)
+                    
+        draw()
 
     pygame.quit()
     sys.exit()
