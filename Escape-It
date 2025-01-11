@@ -19,7 +19,7 @@ BG_IMAGE = pygame.image.load(os.path.join("Assets", "Bg.webp"))
 BG_WIDTH = BG_IMAGE.get_width()
 BG = pygame.transform.scale_by(BG_IMAGE, (WIDTH // BG_WIDTH) + 1)
 
-font_large = pygame.font.SysFont("handycasual", 90)
+font_large = pygame.font.SysFont("handycasual", 120)
 font_medium = pygame.font.SysFont("handycasual", 40)
 font_small = pygame.font.SysFont("handycasual", 25)
 
@@ -52,29 +52,31 @@ def is_button_clicked(button, event):
 
 # Create buttons
 button_ai_vs_human = create_button(150, 300, 250, 100, GRAY, BLUE, "Human vs AI", BLACK, font_medium)
-button_human_vs_human = create_button(450, 300, 250, 100, GRAY, GREEN, "2+ Players", BLACK, font_medium)
+button_human_vs_human = create_button(450, 300, 250, 100, GRAY, GREEN, "2 Players", BLACK, font_medium)
 
 def draw():
     WINDOW.blit(BG, (0, 0))
-    draw_text = font_large.render("Escape it!", True, BLACK)
-    WINDOW.blit(draw_text, draw_text.get_rect(center=(WIDTH // 2, 100)))
+    draw_text = font_large.render("Escape it!", True, WHITE)
+    WINDOW.blit(draw_text, draw_text.get_rect(center=(WIDTH // 2, 150)))
     draw_button(button_ai_vs_human)
     draw_button(button_human_vs_human)
     pygame.display.flip()
 
-# Main game loop
-running = True
-while running:
-    draw()
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        elif is_button_clicked(button_ai_vs_human, event):
-            print("AI vs Human selected")
-            # Placeholder for starting AI vs Human mode
-        elif is_button_clicked(button_human_vs_human, event):
-            print("Human vs Human selected")
-            # Placeholder for starting Human vs Human mode
+def main():
+    running = True
+    while running:
+        draw()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif is_button_clicked(button_ai_vs_human, event):
+                print("AI vs Human selected")
+            elif is_button_clicked(button_human_vs_human, event):
+                print("Human vs Human selected")
 
-pygame.quit()
-sys.exit()
+    pygame.quit()
+    sys.exit()
+
+
+if __name__ == "__main__":
+    main()
