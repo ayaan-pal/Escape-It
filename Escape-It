@@ -10,13 +10,21 @@ pygame.display.set_caption("Escape It!")
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+BLUE = (200, 200, 255)
 
 BG_IMAGE = pygame.image.load(os.path.join("Assets", "Bg.webp"))
 BG_WIDTH = BG_IMAGE.get_width()
 BG = pygame.transform.scale_by(BG_IMAGE, (WIDTH // BG_WIDTH) + 1)
 
+Selected_text = "Select a mode"
+Game_State = "Menu"
+
 AI = pygame.image.load(os.path.join("Assets", "PVAI.svg"))
 PVP = pygame.image.load(os.path.join("Assets", "PVP.svg"))
+AI_hover = pygame.image.load(os.path.join("Assets", "PVAIhover.svg"))
+PVP_hover = pygame.image.load(os.path.join("Assets", "PVPhover.svg"))
+PLAY = pygame.image.load(os.path.join("Assets", "Play.svg"))
+PLAY_hover = pygame.image.load(os.path.join("Assets", "Playhover.svg"))
 
 font_large = pygame.font.SysFont("handycasual", 120)
 font_medium = pygame.font.SysFont("handycasual", 40)
@@ -50,28 +58,45 @@ class Button:
                 return True
         return False
 
-AI_button = Button(AI, 150, 300, AI, "Human vs AI", BLACK, font_medium)
-Human_button = Button(PVP, 450, 300, PVP, "2 Players", BLACK, font_medium)
+AI_button = Button(AI, 150, 300, AI_hover, "Human vs AI", WHITE, font_medium)
+Human_button = Button(PVP, 450, 300, PVP_hover, "2 Players", WHITE, font_medium)
+Play_button = Button(PLAY, 300, 500, PLAY_hover, "Play", WHITE, font_medium)
 
 def draw():
+    WINDOW.fill(BLUE)
     WINDOW.blit(BG, (0, 0))
-    draw_text = font_large.render("Escape it!", True, WHITE)
-    WINDOW.blit(draw_text, draw_text.get_rect(center=(WIDTH // 2, 150)))
-    AI_button.draw(WINDOW)
-    Human_button.draw(WINDOW)
+    
+    if Game_State == "Menu":
+        Title = font_large.render("Escape it!", True, WHITE)
+        WINDOW.blit(Title, Title.get_rect(center=(WIDTH // 2, 150)))
+        SelectedText = font_medium.render(Selected_text, True, WHITE)
+        WINDOW.blit(SelectedText, SelectedText.get_rect(center=(WIDTH // 2, 400)))
+        AI_button.draw(WINDOW)
+        Human_button.draw(WINDOW)
+        Play_button.draw(WINDOW)
+    
     pygame.display.update()
 
 def main():
+    global Selected_text, Game_State
     running = True
     while running:
         draw()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            elif AI_button.clicked(event):
-                print("AI vs Human selected")
-            elif Human_button.clicked(event):
-                print("Human vs Human selected")
+            
+            if AI_button.clicked(event):
+                Selected_text = "Human vs AI selected"
+            
+            if Human_button.clicked(event):
+                Selected_text = "2 Players selected"
+            
+            if Play_button.clicked(event):
+                if Selected_text == "Human vs AI selected":
+                    Game_State = "AI"
+                if Selected_text == "2 Players selected":
+                    Game_State = "Human"
 
     pygame.quit()
     sys.exit()
