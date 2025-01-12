@@ -151,13 +151,35 @@ class Player:
         new_x = self.x + self.x_vel
         new_y = self.y + self.y_vel
         
-        for each in range(0, abs(round(new_y) - round(self.y))):
-            self.y += 1 if new_y > self.y else -1
-            if WINDOW.get_at((self.x + self.image.get_width(), self.y + self.image.get_height())) == (0, 0, 0, 255):
-                self.y -= 1 if new_y > self.y else -1
-                self.y_vel = 0
-                break
-            
+        if not self.check_horizontal_collision(window, new_x, self.y):
+            self.x = new_x
+        else:
+            self.x_vel = 0
+        
+        if not self.check_vertical_collision(window, self.x, new_y):
+            self.y = new_y
+        else:
+            self.y_vel = 0
+            while self.check_vertical_collision(window, self.x, self.y + self.rect.height):
+                self.y -= 1
+
+    def check_collision(self, window, x, y):
+        return (window.get_at((int(x), int(y))) == BLACK or
+                window.get_at((int(x + self.rect.width), int(y))) == BLACK or
+                window.get_at((int(x), int(y + self.rect.height))) == BLACK or
+                window.get_at((int(x + self.rect.width), int(y + self.rect.height))) == BLACK)
+
+    def check_vertical_collision(self, window, x, y):
+        return (window.get_at((int(x), int(y))) == BLACK or
+                window.get_at((int(x + self.rect.width), int(y))) == BLACK or
+                window.get_at((int(x), int(y + self.rect.height))) == BLACK or
+                window.get_at((int(x + self.rect.width), int(y + self.rect.height))) == BLACK)
+
+    def check_horizontal_collision(self, window, x, y):
+        return (window.get_at((int(x), int(y))) == BLACK or
+                window.get_at((int(x + self.rect.width), int(y))) == BLACK or
+                window.get_at((int(x), int(y + self.rect.height))) == BLACK or
+                window.get_at((int(x + self.rect.width), int(y + self.rect.height))) == BLACK)
 
 class Button:
     def __init__(self, image, x, y, hover_image, text, text_color, font):
@@ -219,7 +241,7 @@ def draw():
         WINDOW.blit(Title, (WIDTH // 2 - Title.get_width() // 2, 75))
         WINDOW.blit(Settings_image, (WIDTH - Settings_image.get_width() - 20, 20))
         WINDOW.blit(Feedback_image, (WIDTH // 2 - Feedback_image.get_width() // 2, HEIGHT // 2 - Feedback_image.get_height() // 2))
-        WINDOW.blit(home_image, (20, 20))
+        home_icon.draw(WINDOW)
     
     if Game_State == "Menu":
         WINDOW.blit(BG, (0, 0))
@@ -288,6 +310,10 @@ def main():
                         Game_State = "Map-Human"
                         Mode_Selection = "Human"
                         Selected_text = ""
+                
+                if Setting_icon.clicked(event):
+                    Game_State = "Settings"
+                    Selected_text = ""
                     
             if Game_State.startswith("Map"):
                 WINDOW.fill(BLUE)
@@ -351,13 +377,10 @@ def main():
                             Game_State = "Game"
                             Selected_text = ""
                             
-            if Setting_icon.clicked(event):
-                Game_State = "Settings"
-                Selected_text = ""
-                
-            if home_icon.clicked(event):
-                Game_State = "Menu"
-                Selected_text = ""
+            if Game_State == "Settings":
+                if home_icon.clicked(event):
+                    Game_State = "Menu"
+                    Selected_text = "Choose a mode to continue"
                             
         if Game_State == "Game":
             if Mode_Selection == "AI":
