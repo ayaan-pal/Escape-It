@@ -4,6 +4,9 @@ import os
 
 pygame.init()
 
+# Initialize the mixer for background music
+pygame.mixer.init()
+
 WIDTH, HEIGHT = 800, 600
 WINDOW = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Escape It!")
@@ -15,6 +18,11 @@ BLUE = (200, 200, 255)
 BG_IMAGE = pygame.image.load(os.path.join("Assets", "Background.jpg"))
 BG_WIDTH = BG_IMAGE.get_width()
 BG = pygame.transform.scale(BG_IMAGE, (int(WIDTH / BG_WIDTH * BG_IMAGE.get_width()), HEIGHT))
+
+# Load background music
+pygame.mixer.music.load(os.path.join("Assets", "background.mp3"))
+pygame.mixer.music.set_volume(0.5)  # Set volume (0.0 to 1.0)
+pygame.mixer.music.play(-1)  # Play the music in a loop
 
 class BG_selector:
     def __init__(self, image, x, y):
@@ -199,6 +207,7 @@ def draw():
         WINDOW.blit(BG, (0, 0))
         WINDOW.blit(Title, (WIDTH // 2 - Title.get_width() // 2, 75))
         WINDOW.blit(Settings_image, (WIDTH - Settings_image.get_width() - 20, 20))
+        
     
     if Game_State == "Menu":
         WINDOW.blit(BG, (0, 0))
