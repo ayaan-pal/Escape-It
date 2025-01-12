@@ -19,6 +19,8 @@ BG_IMAGE = pygame.image.load(os.path.join("Assets", "Background.jpg"))
 BG_WIDTH = BG_IMAGE.get_width()
 BG = pygame.transform.scale(BG_IMAGE, (int(WIDTH / BG_WIDTH * BG_IMAGE.get_width()), HEIGHT))
 
+Feedback_image = pygame.transform.scale_by(pygame.image.load(os.path.join("Assets", "Feedbacklight.svg")), 3)
+
 # Load background music
 pygame.mixer.music.load(os.path.join("Assets", "background.mp3"))
 pygame.mixer.music.set_volume(0.5)  # Set volume (0.0 to 1.0)
@@ -71,6 +73,22 @@ class settings:
             if self.rect.collidepoint(event.pos):
                 return True
         return False
+    
+class home:
+    def __init__(self, image, x, y):
+        self.image = image
+        self.x = x
+        self.y = y
+        self.rect = self.image.get_rect(topleft=(x, y))
+        
+    def draw(self, window):
+        window.blit(self.image, (self.x, self.y))
+        
+    def clicked(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.rect.collidepoint(event.pos):
+                return True
+        return False
 
 
 BG_1_image = pygame.image.load(os.path.join("Assets", "BG1.webp"))
@@ -91,6 +109,9 @@ Title = pygame.transform.scale(Title_image, (int(Title_image.get_width() * 1.4),
 
 Settings_image = pygame.transform.scale(pygame.image.load(os.path.join("Assets", "Settings.png")), (50, 50))
 Setting_icon = settings(Settings_image, WIDTH - Settings_image.get_width() - 20, 20)
+
+home_image = pygame.transform.scale_by(pygame.image.load(os.path.join("Assets", "Home.svg")), 1.4)
+home_icon = home(home_image, 20, 20)
 
 Selected_text = "Select a mode to continue"
 Game_State = "Menu"
@@ -130,23 +151,13 @@ class Player:
         new_x = self.x + self.x_vel
         new_y = self.y + self.y_vel
         
-        if not self.check_collision(window, new_x, self.y):
-            self.x = new_x
-        else:
-            self.x_vel = 0
-        
-        if not self.check_collision(window, self.x, new_y):
-            self.y = new_y
-        else:
-            self.y_vel = 0
-            while self.check_collision(window, self.x, self.y + self.rect.height):
-                self.y -= 1
-
-    def check_collision(self, window, x, y):
-        return (window.get_at((int(x), int(y))) == BLACK or
-                window.get_at((int(x + self.rect.width), int(y))) == BLACK or
-                window.get_at((int(x), int(y + self.rect.height))) == BLACK or
-                window.get_at((int(x + self.rect.width), int(y + self.rect.height))) == BLACK)
+        for each in range(0, abs(round(new_y) - round(self.y))):
+            self.y += 1 if new_y > self.y else -1
+            if WINDOW.get_at((self.x + self.image.get_width(), self.y + self.image.get_height())) == (0, 0, 0, 255):
+                self.y -= 1 if new_y > self.y else -1
+                self.y_vel = 0
+                break
+            
 
 class Button:
     def __init__(self, image, x, y, hover_image, text, text_color, font):
@@ -207,7 +218,8 @@ def draw():
         WINDOW.blit(BG, (0, 0))
         WINDOW.blit(Title, (WIDTH // 2 - Title.get_width() // 2, 75))
         WINDOW.blit(Settings_image, (WIDTH - Settings_image.get_width() - 20, 20))
-        
+        WINDOW.blit(Feedback_image, (WIDTH // 2 - Feedback_image.get_width() // 2, HEIGHT // 2 - Feedback_image.get_height() // 2))
+        WINDOW.blit(home_image, (20, 20))
     
     if Game_State == "Menu":
         WINDOW.blit(BG, (0, 0))
@@ -341,6 +353,10 @@ def main():
                             
             if Setting_icon.clicked(event):
                 Game_State = "Settings"
+                Selected_text = ""
+                
+            if home_icon.clicked(event):
+                Game_State = "Menu"
                 Selected_text = ""
                             
         if Game_State == "Game":
