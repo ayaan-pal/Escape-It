@@ -1,6 +1,7 @@
 import pygame
 import sys
 import os
+from random import randint
 
 pygame.init()
 
@@ -18,6 +19,9 @@ BLUE = (200, 200, 255)
 BG_IMAGE = pygame.image.load(os.path.join("Assets", "Background.jpg"))
 BG_WIDTH = BG_IMAGE.get_width()
 BG = pygame.transform.scale(BG_IMAGE, (int(WIDTH / BG_WIDTH * BG_IMAGE.get_width()), HEIGHT))
+
+IT = pygame.image.load(os.path.join("Assets", "IT.png")).convert_alpha()
+Player_IT = 0
 
 Feedback_image = pygame.transform.scale_by(pygame.image.load(os.path.join("Assets", "Feedbacklight.svg")), 3)
 
@@ -99,7 +103,7 @@ BG_2 = pygame.transform.scale(BG_2_image, (int(HEIGHT / BG_2_image.get_height() 
 BG_3 = pygame.transform.scale(BG_3_image, (int(HEIGHT / BG_3_image.get_height() * BG_3_image.get_width()), HEIGHT))
 BG_1_selector = BG_selector(pygame.transform.scale(BG_1_image, (int(BG_1_image.get_width() * 0.32), int(BG_1_image.get_height() * 0.32))), 30, 100)
 BG_2_selector = BG_selector(pygame.transform.scale(BG_2_image, (int(BG_2_image.get_width() * 0.29), int(BG_2_image.get_height() * 0.29))), 310, 100)
-BG_3_selector = BG_selector(pygame.transform.scale(BG_3_image, (int(BG_3_image.get_width() * 0.2), int(BG_3_image.get_height() * 0.2))), 600, 100)
+BG_3_selector = BG_selector(pygame.transform.scale(BG_3_image, (int(BG_3_image.get_width() * 0.3), int(BG_3_image.get_height() * 0.2))), 600, 100)
 
 BG_Selection = 0
 Mode_Selection = ""
@@ -129,7 +133,7 @@ font_small = pygame.font.SysFont("handycasual", 25)
 
 
 class Player:
-    def __init__(self, image, x, y, x_vel=0, y_vel=0, gravity=0.5, friction=0.9, jump_strength=10):
+    def __init__(self, image, x, y, x_vel=0, y_vel=0, gravity=2, friction=0.9, jump_strength=10):
         self.image = image
         self.x = x
         self.y = y
@@ -159,23 +163,33 @@ class Player:
         if not self.check_vertical_collision(window, self.x, new_y):
             self.y = new_y
         else:
-            self.y_vel = 0
-            while self.check_vertical_collision(window, self.x, self.y + self.rect.height):
-                self.y -= 1
+            if self.y_vel < 0:  # Hitting the ceiling
+                self.y_vel = 0
+                self.y = int(self.y / 10) * 10 + 10  # Move the player down slightly
+            else:  # Hitting the ground
+                self.y_vel = 0
+                while self.check_vertical_collision(window, self.x, self.y + self.rect.height):
+                    self.y -= 1
 
     def check_collision(self, window, x, y):
+        if x < 0 or x >= WIDTH or y < 0 or y >= HEIGHT:
+            return False
         return (window.get_at((int(x), int(y))) == BLACK or
                 window.get_at((int(x + self.rect.width), int(y))) == BLACK or
                 window.get_at((int(x), int(y + self.rect.height))) == BLACK or
                 window.get_at((int(x + self.rect.width), int(y + self.rect.height))) == BLACK)
 
     def check_vertical_collision(self, window, x, y):
+        if x < 0 or x >= WIDTH or y < 0 or y >= HEIGHT:
+            return False
         return (window.get_at((int(x), int(y))) == BLACK or
                 window.get_at((int(x + self.rect.width), int(y))) == BLACK or
                 window.get_at((int(x), int(y + self.rect.height))) == BLACK or
                 window.get_at((int(x + self.rect.width), int(y + self.rect.height))) == BLACK)
 
     def check_horizontal_collision(self, window, x, y):
+        if x < 0 or x >= WIDTH or y < 0 or y >= HEIGHT:
+            return False
         return (window.get_at((int(x), int(y))) == BLACK or
                 window.get_at((int(x + self.rect.width), int(y))) == BLACK or
                 window.get_at((int(x), int(y + self.rect.height))) == BLACK or
@@ -280,11 +294,11 @@ PlayerA = Player(Player_image_3, 300, 100, 0, 0, 1, 0.95, 13)
 Player_selection_turn = 1
 
 def main():
-    global Selected_text, Game_State, BG_Selection, Mode_Selection, Player_selection_turn, Setting_icon
+    global Selected_text, Game_State, BG_Selection, Mode_Selection, Player_selection_turn, Setting_icon, Player_IT
     clock = pygame.time.Clock()
     running = True
     while running:
-        clock.tick(60)  # Control the framerate to 60 FPS
+        clock.tick(60)  # 60 FPS
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -375,6 +389,7 @@ def main():
                         if Character_3.clicked(event) and Player_1.image != Player_image_3:
                             Player_2.image = Player_image_3
                             Game_State = "Game"
+                            Player_IT = randint(1, 2)
                             Selected_text = ""
                             
             if Game_State == "Settings":
