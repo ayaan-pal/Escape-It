@@ -48,15 +48,32 @@ class Character:
                 return True
         return False
 
-BG_1_image = pygame.image.load(os.path.join("Assets", "BG_1.webp"))
-BG_2_image = pygame.image.load(os.path.join("Assets", "BG_2.webp"))
-BG_3_image = pygame.image.load(os.path.join("Assets", "BG_3.webp"))
+class settings:
+    def __init__(self, image, x, y):
+        self.image = image
+        self.x = x
+        self.y = y
+        self.rect = self.image.get_rect(topleft=(x, y))
+        
+    def draw(self, window):
+        window.blit(self.image, (self.x, self.y))
+        
+    def clicked(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.rect.collidepoint(event.pos):
+                return True
+        return False
+
+
+BG_1_image = pygame.image.load(os.path.join("Assets", "BG1.webp"))
+BG_2_image = pygame.image.load(os.path.join("Assets", "BG2.webp"))
+BG_3_image = pygame.image.load(os.path.join("Assets", "BG3.webp"))
 BG_1 = pygame.transform.scale(BG_1_image, (int(HEIGHT / BG_1_image.get_height() * BG_1_image.get_width()), HEIGHT))
 BG_2 = pygame.transform.scale(BG_2_image, (int(HEIGHT / BG_2_image.get_height() * BG_2_image.get_width()), HEIGHT))
 BG_3 = pygame.transform.scale(BG_3_image, (int(HEIGHT / BG_3_image.get_height() * BG_3_image.get_width()), HEIGHT))
-BG_1_selector = BG_selector(pygame.transform.scale(BG_1_image, (int(BG_1_image.get_width() * 0.2), int(BG_1_image.get_height() * 0.2))), 30, 200)
-BG_2_selector = BG_selector(pygame.transform.scale(BG_2_image, (int(BG_2_image.get_width() * 0.2), int(BG_2_image.get_height() * 0.2))), 310, 200)
-BG_3_selector = BG_selector(pygame.transform.scale(BG_3_image, (int(BG_3_image.get_width() * 0.2), int(BG_3_image.get_height() * 0.2))), 570, 200)
+BG_1_selector = BG_selector(pygame.transform.scale(BG_1_image, (int(BG_1_image.get_width() * 0.32), int(BG_1_image.get_height() * 0.32))), 30, 100)
+BG_2_selector = BG_selector(pygame.transform.scale(BG_2_image, (int(BG_2_image.get_width() * 0.29), int(BG_2_image.get_height() * 0.29))), 310, 100)
+BG_3_selector = BG_selector(pygame.transform.scale(BG_3_image, (int(BG_3_image.get_width() * 0.2), int(BG_3_image.get_height() * 0.2))), 600, 100)
 
 BG_Selection = 0
 Mode_Selection = ""
@@ -64,8 +81,8 @@ Mode_Selection = ""
 Title_image = pygame.image.load(os.path.join("Assets", "Title.png"))
 Title = pygame.transform.scale(Title_image, (int(Title_image.get_width() * 1.4), int(Title_image.get_height() * 1.4)))
 
-Settings_image = pygame.image.load(os.path.join("Assets", "Settings.png"))
-Settings = pygame.transform.scale_by(Settings_image, 1.5)
+Settings_image = pygame.transform.scale(pygame.image.load(os.path.join("Assets", "Settings.png")), (50, 50))
+Setting_icon = settings(Settings_image, WIDTH - Settings_image.get_width() - 20, 20)
 
 Selected_text = "Select a mode to continue"
 Game_State = "Menu"
@@ -81,6 +98,7 @@ font_large = pygame.font.SysFont("handycasual", 120)
 font_medium = pygame.font.SysFont("handycasual", 40)
 font_small = pygame.font.SysFont("handycasual", 25)
 
+
 class Player:
     def __init__(self, image, x, y, x_vel=0, y_vel=0, gravity=0.5, friction=0.9, jump_strength=10):
         self.image = image
@@ -95,6 +113,32 @@ class Player:
         
     def draw(self, window):
         window.blit(self.image, (self.x, self.y))
+        
+    def update(self, window):
+        self.y_vel += self.gravity
+        self.x_vel *= self.friction
+        self.y_vel *= self.friction
+        
+        new_x = self.x + self.x_vel
+        new_y = self.y + self.y_vel
+        
+        if not self.check_collision(window, new_x, self.y):
+            self.x = new_x
+        else:
+            self.x_vel = 0
+        
+        if not self.check_collision(window, self.x, new_y):
+            self.y = new_y
+        else:
+            self.y_vel = 0
+            while self.check_collision(window, self.x, self.y + self.rect.height):
+                self.y -= 1
+
+    def check_collision(self, window, x, y):
+        return (window.get_at((int(x), int(y))) == BLACK or
+                window.get_at((int(x + self.rect.width), int(y))) == BLACK or
+                window.get_at((int(x), int(y + self.rect.height))) == BLACK or
+                window.get_at((int(x + self.rect.width), int(y + self.rect.height))) == BLACK)
 
 class Button:
     def __init__(self, image, x, y, hover_image, text, text_color, font):
@@ -130,17 +174,17 @@ class Button:
             return True
         return False
 
-AI_button = Button(AI, 150, 300, AI_hover, "Human vs AI", WHITE, font_medium)
-Human_button = Button(PVP, 450, 300, PVP_hover, "2 Players", WHITE, font_medium)
+AI_button = Button(AI, 130, 300, AI_hover, "Human vs AI", WHITE, font_medium)
+Human_button = Button(PVP, 430, 300, PVP_hover, "2 Players", WHITE, font_medium)
 Play_button = Button(PLAY, 285, 450, PLAY_hover, "Play", WHITE, font_medium)
 
 # Character selection buttons
 Player_image_1 = pygame.image.load(os.path.join("Assets", "glob1.webp"))
 Player_image_2 = pygame.image.load(os.path.join("Assets", "glob2.webp"))
 Player_image_3 = pygame.image.load(os.path.join("Assets", "glob3.webp"))
-Character_1 = Character(pygame.transform.scale_by(Player_image_1, 4), 150, 200)
-Character_2 = Character(pygame.transform.scale_by(Player_image_2, 4), 350, 200)
-Character_3 = Character(pygame.transform.scale_by(Player_image_3, 4), 550, 200)
+Character_1 = Character(pygame.transform.scale(Player_image_1, (int(Player_image_1.get_width() * 4), int(Player_image_1.get_height() * 4))), 150, 100)
+Character_2 = Character(pygame.transform.scale(Player_image_2, (int(Player_image_2.get_width() * 4), int(Player_image_2.get_height() * 4))), 350, 100)
+Character_3 = Character(pygame.transform.scale(Player_image_3, (int(Player_image_3.get_width() * 4), int(Player_image_3.get_height() * 4))), 550, 100)
 
 def draw():
     WINDOW.fill(BLUE)
@@ -151,10 +195,15 @@ def draw():
     elif BG_Selection == 3:
         WINDOW.blit(BG_3, (0, 0))
     
+    if Game_State == "Settings":
+        WINDOW.blit(BG, (0, 0))
+        WINDOW.blit(Title, (WIDTH // 2 - Title.get_width() // 2, 75))
+        WINDOW.blit(Settings_image, (WIDTH - Settings_image.get_width() - 20, 20))
+    
     if Game_State == "Menu":
         WINDOW.blit(BG, (0, 0))
         WINDOW.blit(Title, (WIDTH // 2 - Title.get_width() // 2, 75))
-        WINDOW.blit(Settings, (WIDTH - Settings.get_width() - 20, 20))
+        WINDOW.blit(Settings_image, (WIDTH - Settings_image.get_width() - 20, 20))
         
         AI_button.draw(WINDOW)
         Human_button.draw(WINDOW)
@@ -182,13 +231,13 @@ def draw():
     
     pygame.display.update()
 
-Player_1 = Player(Player_image_1, 100, 100, 0, 0, 1, 0.95, 20)
-Player_2 = Player(Player_image_2, 200, 100, 0, 0, 1, 0.95, 20)
-PlayerA = Player(Player_image_3, 300, 100, 0, 0, 1, 0.95, 20)
+Player_1 = Player(Player_image_1, 100, 100, 0, 0, 1, 0.95, 13)
+Player_2 = Player(Player_image_2, 200, 100, 0, 0, 1, 0.95, 13)
+PlayerA = Player(Player_image_3, 300, 100, 0, 0, 1, 0.95, 13)
 Player_selection_turn = 1
 
 def main():
-    global Selected_text, Game_State, BG_Selection, Mode_Selection, Player_selection_turn
+    global Selected_text, Game_State, BG_Selection, Mode_Selection, Player_selection_turn, Setting_icon
     clock = pygame.time.Clock()
     running = True
     while running:
@@ -220,6 +269,11 @@ def main():
                         Selected_text = ""
                     
             if Game_State.startswith("Map"):
+                WINDOW.fill(BLUE)
+                BG_1_selector.draw(WINDOW)
+                BG_2_selector.draw(WINDOW)
+                BG_3_selector.draw(WINDOW)
+                pygame.display.update()
                 if BG_1_selector.clicked(event):
                     BG_Selection = 1
                     Game_State = "Character"
@@ -276,6 +330,10 @@ def main():
                             Game_State = "Game"
                             Selected_text = ""
                             
+            if Setting_icon.clicked(event):
+                Game_State = "Settings"
+                Selected_text = ""
+                            
         if Game_State == "Game":
             if Mode_Selection == "AI":
                 if pygame.key.get_pressed()[pygame.K_LEFT]:
@@ -285,13 +343,7 @@ def main():
                 if pygame.key.get_pressed()[pygame.K_UP]:
                     PlayerA.y_vel = -PlayerA.jump_strength
                 
-                PlayerA.y_vel += PlayerA.gravity
-                
-                PlayerA.x_vel *= PlayerA.friction
-                PlayerA.y_vel *= PlayerA.friction
-                
-                PlayerA.x += PlayerA.x_vel
-                PlayerA.y += PlayerA.y_vel
+                PlayerA.update(WINDOW)
                 
             if Mode_Selection == "Human":
                 if pygame.key.get_pressed()[pygame.K_LEFT]:
@@ -301,15 +353,7 @@ def main():
                 if pygame.key.get_pressed()[pygame.K_UP]:
                     Player_1.y_vel = -Player_1.jump_strength
                 
-                Player_1.y_vel += Player_1.gravity
-                
-                Player_1.x_vel *= Player_1.friction
-                Player_1.y_vel *= Player_1.friction
-                
-                Player_1.x += Player_1.x_vel
-                Player_1.y += Player_1.y_vel
-                
-                
+                Player_1.update(WINDOW)
                 
                 if pygame.key.get_pressed()[pygame.K_a]:
                     Player_2.x_vel = -5
@@ -318,13 +362,7 @@ def main():
                 if pygame.key.get_pressed()[pygame.K_w]:
                     Player_2.y_vel = -Player_2.jump_strength
                 
-                Player_2.y_vel += Player_2.gravity
-                
-                Player_2.x_vel *= Player_2.friction
-                Player_2.y_vel *= Player_2.friction
-                
-                Player_2.x += Player_2.x_vel
-                Player_2.y += Player_2.y_vel
+                Player_2.update(WINDOW)
                     
         draw()
 
